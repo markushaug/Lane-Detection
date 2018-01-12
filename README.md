@@ -1,4 +1,4 @@
-# street_lane_detection
+# street_lane_detection (currently in development)
 Lane recognition system for robotic systems
 
 In this block I will give you a very compact introduction to digital image processing.
