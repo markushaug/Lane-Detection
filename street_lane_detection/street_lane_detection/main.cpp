@@ -29,6 +29,7 @@ int main(int argc, char*argv[]){
         }
     } else {
         VideoCapture cap("/Users/markushaug/Desktop/wandaor.mov");
+        //VideoCapture cap("/Users/markushaug/Desktop/LaneDetection.avi");
         processInput(cap);
     }
     cout << "press any key to close all windows";

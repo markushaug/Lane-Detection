@@ -13,13 +13,15 @@ using namespace cv;
 class LaneDetector
 {
 private:
-    int houghVote = 200;
-    bool showOriginal = 0;
+    int houghVote = 150;
+    bool showOriginal = 1;
     bool showCanny = 1;
-    bool showHough = 1;
+    bool showHough = 0;
     bool showHoughP = 1;
-    int newHeight = 320;
-    int newWidth = 480;
+    int newHeight = 320,
+        newWidth = 480,
+        originalHeight{0},
+        originalWidth{0};
     
 public:
     Mat currFrame; //stores the upcoming frame
@@ -29,13 +31,8 @@ public:
     {
         
         currFrame = Mat(newHeight,newWidth,CV_8UC1,0.0);                        //initialised the image size to 320x480
-        resize(startFrame, currFrame, currFrame.size());             // resize the input to required size
-        
-        
-        
-        //namedWindow("Contours"); // Canny
-        //namedWindow("Detected Lines with Hough");
-        //namedWindow("Detected Lines with HoughP");
+        this->originalHeight = startFrame.rows;
+            resize(startFrame, currFrame, currFrame.size());             // resize the input to required size
         
         getLaneLines();
     }
@@ -61,14 +58,41 @@ public:
             width(newWidth),
             height(newHeight/2);
         
+       /*test */
+        Mat mask = Mat::zeros(320, 480, CV_8UC3);
+        //Vertices
+        vector<Point> points;
+        points.push_back(Point(0,320)); // Point A
+        points.push_back(Point(480,320)); // Point B
+        points.push_back(Point(240,160)); // Point C
+        
+        //fillPoly(mask,points, Scalar(0,255,0));
+        
+        
+        
+        const cv::Point *pts = (const cv::Point*) Mat(points).data;
+        int npts = Mat(points).rows; // 3, since an triangle has only tree points
+   
+        std::cout << "Number of polygon vertices: " << npts << std::endl;
+        
+        // draw the polygon
+        
+        polylines(currFrame, &pts,&npts, 1,
+                  true, 			// draw closed contour (i.e. joint end to start)
+                  Scalar(0,255,0),// colour RGB ordering (here = green)
+                  3, 		        // line thickness
+                  CV_AA, 0);
+        imshow("zero", mask);
+        
+        /* end test */
         Rect roi(left, top, width, height);
         Mat imgROI = currFrame(roi);
-        Scalar val = Scalar(255,255,255);
-        copyMakeBorder(imgROI, imgROI, 2, 2, 2, 2, BORDER_CONSTANT, val);
-        
+        /*Scalar val = Scalar(255,255,255);
+        copyMakeBorder(imgROI, imgROI, 2,2,2,2, BORDER_CONSTANT, val);
+        */
         if(showOriginal){
             namedWindow("Original Image");
-            imshow("Original Image", imgROI);
+            imshow("Original Image", currFrame);
         }
         
         //GaussianBlur(imgROI ,imgROI,Size(5, 5), 0);
@@ -81,7 +105,7 @@ public:
         
         if(showCanny){
             namedWindow("Contours");
-            imshow("Contours", contoursInv);
+            imshow("Contours", contours);
         }
         
         // Hough transform
@@ -107,7 +131,7 @@ public:
         
         // Draw the lines
         vector<Vec2f>::const_iterator it=lines.begin();
-        Mat hough(imgROI.size(), CV_8U, Scalar(0));
+        Mat hough(imgROI.size(), CV_8U, Scalar(255));
         while(it!=lines.end()){
             float rho = (*it)[0];
             float theta = (*it)[1];
@@ -119,8 +143,8 @@ public:
                 // point of intersection of the line with last row
                 Point pt2((rho-result.rows*sin(theta))/cos(theta), result.rows);
                 // draw a line
-                line(result, pt1, pt2, Scalar(255,255,255), 1);
-                line(hough, pt1, pt2, Scalar(255,255,255),1);
+                line(result, pt1, pt2, Scalar(0,0,255), 4);
+                line(hough, pt1, pt2, Scalar(0,0,255),4);
             }
             cout << "line: (" << rho << "," << theta << ")" << endl;
             ++it;
@@ -128,12 +152,14 @@ public:
         
         if(showHough){
             namedWindow("Detected lines with Hough");
-            imshow("Detected lines with Hough", hough);
+            imshow("Detected lines with Hough", result);
         }
         
         // probabilistic Hough
         
-    }
+        
+        
+    } // end main
     
     void nextFrame(Mat &nxt)
     {
