@@ -28,8 +28,8 @@ int main(int argc, char*argv[]){
             processInput(cap);
         }
     } else {
-        VideoCapture cap("/Users/markushaug/Desktop/wandaor.mov");
-        //VideoCapture cap("/Users/markushaug/Desktop/LaneDetection.avi");
+        // Challenge video
+        VideoCapture cap("/Users/markus/Desktop/challenge.mp4");
         processInput(cap);
     }
     cout << "press any key to close all windows";

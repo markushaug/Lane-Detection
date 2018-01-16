@@ -16,7 +16,7 @@ private:
     int houghVote = 150;
     bool showOriginal = 1;
     bool showCanny = 1;
-    bool showHough = 0;
+    bool showHough = 1;
     bool showHoughP = 1;
     int newHeight = 320,
         newWidth = 480,
@@ -52,44 +52,43 @@ public:
         Mat gray;
         cvtColor(currFrame, gray, COLOR_BGR2GRAY);
         
-        // Region of interest
-        int left(0),
-            top(320/2),
-            width(newWidth),
-            height(newHeight/2);
+        /* test */
+        Mat imgIn = currFrame;
+        imgIn.convertTo(imgIn, CV_32FC3, 1/255.0);
         
-       /*test */
-        Mat mask = Mat::zeros(320, 480, CV_8UC3);
-        //Vertices
-        vector<Point> points;
-        points.push_back(Point(0,320)); // Point A
-        points.push_back(Point(480,320)); // Point B
-        points.push_back(Point(240,160)); // Point C
+        // Output image is set to black
+        Mat imgROI = Mat::ones(imgIn.size(), imgIn.type());
+        imgROI = Scalar(0.0,0.0,0.0);
         
-        //fillPoly(mask,points, Scalar(0,255,0));
+        int height, width;
+        height = currFrame.rows;
+        width = currFrame.cols;
+        // Input triangle
+        vector <Point2f> points;
+        points.push_back(Point2f(0,height-1));
+        points.push_back(Point2f(width-1,height-1));
+        points.push_back(Point2f(width/2-1,height/2-1));
         
+        // Warp all pixels inside input triangle to output triangle
+        warpTriangle(imgIn, imgROI, points);
         
+        // Convert back to unit because OpenCV antialiasing does not work on image of type CV_32FC3
+        imgIn.convertTo(imgIn, CV_8UC3, 255.0);
+        imgROI.convertTo(imgROI, CV_8UC3, 0.0);
         
-        const cv::Point *pts = (const cv::Point*) Mat(points).data;
-        int npts = Mat(points).rows; // 3, since an triangle has only tree points
-   
-        std::cout << "Number of polygon vertices: " << npts << std::endl;
+        // Draw the triangle using this color
+        Scalar color = Scalar(255, 150, 0);
         
-        // draw the polygon
+        // cv::polylines needs vector of type Point and not Point2f
+        vector<Point> triInInt, triOutInt;
+        for(int i(0); i < 3; i++){
+            triInInt.push_back( Point(points[i].x, points[i].y ));
+        }
+        // Draw the polylines
+        polylines(imgIn, triInInt, true, color, 2, 16);
+        polylines(imgROI, triInInt, true, color, 2, 16);
         
-        polylines(currFrame, &pts,&npts, 1,
-                  true, 			// draw closed contour (i.e. joint end to start)
-                  Scalar(0,255,0),// colour RGB ordering (here = green)
-                  3, 		        // line thickness
-                  CV_AA, 0);
-        imshow("zero", mask);
-        
-        /* end test */
-        Rect roi(left, top, width, height);
-        Mat imgROI = currFrame(roi);
-        /*Scalar val = Scalar(255,255,255);
-        copyMakeBorder(imgROI, imgROI, 2,2,2,2, BORDER_CONSTANT, val);
-        */
+       
         if(showOriginal){
             namedWindow("Original Image");
             imshow("Original Image", currFrame);
@@ -167,6 +166,43 @@ public:
         getLaneLines();
     }
     
+    void warpTriangle(Mat &img1, Mat &img2, vector<Point2f> tri){
+        // Find bounding rectangle for each triangle
+        Rect r1 = boundingRect(tri);
+        Rect r2 = boundingRect(tri);
+        
+        // Offset points by left top corner of the respective rectangles
+        vector<Point2f> tri1Cropped, tri2Cropped;
+        vector<Point> tri2CroppedInt;
+        for(int i = 0; i < 3; i++)
+        {
+            tri1Cropped.push_back( Point2f( tri[i].x - r1.x, tri[i].y -  r1.y) );
+            tri2Cropped.push_back( Point2f( tri[i].x - r2.x, tri[i].y - r2.y) );
+            
+            // fillConvexPoly needs a vector of Point and not Point2f
+            tri2CroppedInt.push_back( Point((int)(tri[i].x - r2.x), (int)(tri[i].y - r2.y)) );
+            
+        }
+        
+        // Apply warpImage to small rectangular patches
+        Mat img1Cropped;
+        img1(r1).copyTo(img1Cropped);
+        
+        // Given a pair of triangles, find the affine transform.
+        Mat warpMat = getAffineTransform( tri1Cropped, tri2Cropped );
+        
+        // Apply the Affine Transform just found to the src image
+        Mat img2Cropped = Mat::zeros(r2.height, r2.width, img1Cropped.type());
+        warpAffine( img1Cropped, img2Cropped, warpMat, img2Cropped.size(), INTER_LINEAR, BORDER_REFLECT_101);
+        
+        // Get mask by filling triangle
+        Mat mask = Mat::zeros(r2.height, r2.width, CV_32FC3);
+        fillConvexPoly(mask, tri2CroppedInt, Scalar(1.0, 1.0, 1.0), 16, 0);
+        
+        // Copy triangular region of the rectangular patch to the output image
+        multiply(img2Cropped,mask, img2Cropped);
+        imshow("Region of interest", img2Cropped);
+   }
     
     
     Mat hough(Mat frame){
