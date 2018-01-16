@@ -52,6 +52,15 @@ public:
         Mat gray;
         cvtColor(currFrame, gray, COLOR_BGR2GRAY);
         
+        //GaussianBlur(currFrame ,currFrame,Size(5, 5), 0);
+        
+        // Canny algorithm
+        Mat contours;
+        Canny(currFrame, contours , 100,200);
+        Mat contoursInv;
+        threshold(contours, contoursInv, 128, 255,THRESH_BINARY_INV);
+        
+        
         /* test */
         Mat imgIn = currFrame;
         imgIn.convertTo(imgIn, CV_32FC3, 1/255.0);
@@ -94,7 +103,7 @@ public:
             imshow("Original Image", currFrame);
         }
         
-        //GaussianBlur(imgROI ,imgROI,Size(5, 5), 0);
+        /*//GaussianBlur(imgROI ,imgROI,Size(5, 5), 0);
         
         // Canny algorithm
         Mat contours;
@@ -106,7 +115,7 @@ public:
             namedWindow("Contours");
             imshow("Contours", contours);
         }
-        
+        */
         // Hough transform
         vector<Vec2f> lines;
         if(houghVote < 1 or lines.size() < 2){
