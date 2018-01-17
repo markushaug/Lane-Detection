@@ -49,21 +49,7 @@ public:
     
     void getLaneLines(){
         
-        Mat gray;
-        cvtColor(currFrame, gray, COLOR_BGR2GRAY);
-        
-        //GaussianBlur(currFrame ,currFrame,Size(5, 5), 0);
-        
-        // Canny algorithm
-        Mat contours;
-        Canny(currFrame, contours , 100,200);
-        Mat contoursInv;
-        threshold(contours, contoursInv, 128, 255,THRESH_BINARY_INV);
-        
-        
-        /* test */
         Mat imgIn = currFrame;
-        imgIn.convertTo(imgIn, CV_32FC3, 1/255.0);
         
         // Output image is set to black
         Mat imgROI = Mat::ones(imgIn.size(), imgIn.type());
@@ -79,11 +65,7 @@ public:
         points.push_back(Point2f(width/2-1,height/2-1));
         
         // Warp all pixels inside input triangle to output triangle
-        warpTriangle(imgIn, imgROI, points);
-        
-        // Convert back to unit because OpenCV antialiasing does not work on image of type CV_32FC3
-        imgIn.convertTo(imgIn, CV_8UC3, 255.0);
-        imgROI.convertTo(imgROI, CV_8UC3, 0.0);
+        crateRegionOfInterest(imgIn, imgROI, points);
         
         // Draw the triangle using this color
         Scalar color = Scalar(255, 150, 0);
@@ -103,11 +85,12 @@ public:
             imshow("Original Image", currFrame);
         }
         
-        /*//GaussianBlur(imgROI ,imgROI,Size(5, 5), 0);
+        cvtColor(imgROI, imgROI, COLOR_BGR2GRAY);
+        GaussianBlur(imgROI ,imgROI,Size(5, 5), 0);
         
         // Canny algorithm
         Mat contours;
-        Canny(imgROI, contours, 100,200);
+        Canny(imgROI, contours, 50,150);
         Mat contoursInv;
         threshold(contours, contoursInv, 128, 255,THRESH_BINARY_INV);
         
@@ -115,7 +98,7 @@ public:
             namedWindow("Contours");
             imshow("Contours", contours);
         }
-        */
+        
         // Hough transform
         vector<Vec2f> lines;
         if(houghVote < 1 or lines.size() < 2){
@@ -134,12 +117,13 @@ public:
             houghVote -=5;
         }
         cout << "houghVote: " << houghVote << endl;
+    
         Mat result(imgROI.size(), CV_8U, Scalar(255));
         imgROI.copyTo(result);
         
         // Draw the lines
         vector<Vec2f>::const_iterator it=lines.begin();
-        Mat hough(imgROI.size(), CV_8U, Scalar(255));
+        Mat hough(imgROI.size(), CV_8U, 255);
         while(it!=lines.end()){
             float rho = (*it)[0];
             float theta = (*it)[1];
@@ -151,8 +135,8 @@ public:
                 // point of intersection of the line with last row
                 Point pt2((rho-result.rows*sin(theta))/cos(theta), result.rows);
                 // draw a line
-                line(result, pt1, pt2, Scalar(0,0,255), 4);
-                line(hough, pt1, pt2, Scalar(0,0,255),4);
+                line(result, pt1, pt2, color, 4);
+                line(hough, pt1, pt2, color,4);
             }
             cout << "line: (" << rho << "," << theta << ")" << endl;
             ++it;
@@ -164,7 +148,7 @@ public:
         }
         
         // probabilistic Hough
-        
+        // TODO
         
         
     } // end main
@@ -175,7 +159,7 @@ public:
         getLaneLines();
     }
     
-    void warpTriangle(Mat &img1, Mat &img2, vector<Point2f> tri){
+    void crateRegionOfInterest(Mat &img1, Mat &img2, vector<Point2f> tri){
         // Find bounding rectangle for each triangle
         Rect r1 = boundingRect(tri);
         Rect r2 = boundingRect(tri);
@@ -205,29 +189,14 @@ public:
         warpAffine( img1Cropped, img2Cropped, warpMat, img2Cropped.size(), INTER_LINEAR, BORDER_REFLECT_101);
         
         // Get mask by filling triangle
-        Mat mask = Mat::zeros(r2.height, r2.width, CV_32FC3);
+        Mat mask = Mat::zeros(r2.height, r2.width, CV_8UC3);
         fillConvexPoly(mask, tri2CroppedInt, Scalar(1.0, 1.0, 1.0), 16, 0);
         
         // Copy triangular region of the rectangular patch to the output image
         multiply(img2Cropped,mask, img2Cropped);
-        imshow("Region of interest", img2Cropped);
+        img2 = img2Cropped;
+        
    }
     
-    
-    Mat hough(Mat frame){
-        Mat dst, cdst;
-        
-        // STEP 1:  Apply the transform
-        vector<Vec2f> lines; // A vector that will store the parameters (rho, theta) of the detected lines
-        double rho = 1; // The resolution of the parameter r in pixels. We use 1 pixel.
-        double theta = (CV_PI/180); // The resolution of the parameter theta in radians. We use 1 degree.
-        int threshold = 0; // The minimum number of intersections to "detect" a line
-        HoughLines(dst /* cannied */, cdst,  rho,  theta,  threshold);
-        
-        
-        
-        return cdst;
-        
-    }
     
 };//end of class LaneDetector
