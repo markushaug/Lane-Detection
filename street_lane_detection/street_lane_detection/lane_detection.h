@@ -2,13 +2,9 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
-#include <vector>
-#include <algorithm>
-#include <math.h>
 #define PI 3.1415926
 using namespace std;
 using namespace cv;
-
 
 class LaneDetector
 {
@@ -26,18 +22,19 @@ private:
 public:
     Mat currFrame; //stores the upcoming frame
     
-    
     LaneDetector(Mat startFrame)
     {
-        
-        currFrame = Mat(newHeight,newWidth,CV_8UC1,0.0);                        //initialised the image size to 320x480
+        currFrame = Mat(newHeight,newWidth,CV_8UC1,0.0);// initialised the image size to 320x480
         this->originalHeight = startFrame.rows;
-            resize(startFrame, currFrame, currFrame.size());             // resize the input to required size
+            resize(startFrame, currFrame, currFrame.size());// resize the input to required size
         
         getLaneLines();
     }
     
-    void setupDetector(int _newHeight, int _newWidth, int _houghVote, bool _showOriginal, bool _showCanny, bool _showHough, bool _showHoughP){
+    void
+    setupDetector(int _newHeight, int _newWidth, int _houghVote, bool _showOriginal,
+                  bool _showCanny, bool _showHough, bool _showHoughP)
+    {
         this->newHeight = _newHeight;
         this->newWidth = _newWidth;
         this->houghVote = _houghVote;
@@ -47,9 +44,9 @@ public:
         this->showHoughP  = _showHoughP;
     }
     
-    
-    void getLaneLines(){
-        
+    void
+    getLaneLines()
+    {
         Mat imgIn = currFrame;
         
         // Output image is set to black
@@ -125,6 +122,7 @@ public:
         // Draw the lines
         vector<Vec2f>::const_iterator it=lines.begin();
         Mat hough(imgROI.size(), CV_8U, 255);
+        
         while(it!=lines.end()){
             float rho = (*it)[0];
             float theta = (*it)[1];
@@ -135,9 +133,18 @@ public:
                 Point pt1(rho/cos(theta),0);
                 // point of intersection of the line with last row
                 Point pt2((rho-result.rows*sin(theta))/cos(theta), result.rows);
+                cout << "drawing line for P1(" <<pt1.x <<"," << pt1.y
+                     << ") and P2(" << pt2.x<<","<<pt2.y<<")"<<endl;
                 // draw a line
-                line(result, pt1, pt2, color, 4);
-                line(hough, pt1, pt2, color,4);
+                
+               /* points.push_back(Point2f(0,height-1));
+                points.push_back(Point2f(width-1,height-1));
+                points.push_back(Point2f(width/2-1,height/2-1));
+                */
+                if( pt1 != Point(0,newHeight/2-1) && pt2 != Point(0,newHeight/2-1) ){
+                    line(result, pt1, pt2, color, 4);
+                    line(hough, pt1, pt2, color,4);
+                }
             }
             cout << "line: (" << rho << "," << theta << ")" << endl;
             ++it;
@@ -154,13 +161,15 @@ public:
         
     } // end main
     
-    void nextFrame(Mat &nxt)
+    void
+    nextFrame(Mat &nxt)
     {
-        resize(nxt ,currFrame, currFrame.size()); //resizing the input image for faster processing
+        resize(nxt ,currFrame, currFrame.size());// resizing the input image for faster processing
         getLaneLines();
     }
     
-    void crateRegionOfInterest(Mat &img1, Mat &img2, vector<Point2f> tri){
+    void crateRegionOfInterest(Mat &img1, Mat &img2, vector<Point2f> tri)
+    {
         // Find bounding rectangle for each triangle
         Rect r1 = boundingRect(tri);
         Rect r2 = boundingRect(tri);
@@ -187,7 +196,8 @@ public:
         
         // Apply the Affine Transform just found to the src image
         Mat img2Cropped = Mat::zeros(r2.height, r2.width, img1Cropped.type());
-        warpAffine( img1Cropped, img2Cropped, warpMat, img2Cropped.size(), INTER_LINEAR, BORDER_REFLECT_101);
+        warpAffine( img1Cropped, img2Cropped, warpMat, img2Cropped.size(),
+                   INTER_LINEAR, BORDER_REFLECT_101);
         
         // Get mask by filling triangle
         Mat mask = Mat::zeros(r2.height, r2.width, CV_8UC3);

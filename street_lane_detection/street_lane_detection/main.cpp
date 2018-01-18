@@ -5,20 +5,16 @@
 //  Created by Markus Haug on 12.01.18.
 //  Copyright © 2018 Haug Markus. All rights reserved.
 //
-//  The main purpose why I write this, is to explain you the needs for an "simple" lane recognition system.
-//  You can use this code for your projects, of course. But advertise for me: haugmarkus.de :)
-
-#include <iostream>
 #include <regex>
-#include "lane_detection.h" // I outsourced all my helper functions in this header
-
+#include "lane_detection.h"
 using namespace std;
 using namespace cv;
 
 bool isInteger(string);
 void processInput(VideoCapture);
 
-int main(int argc, char*argv[]){
+int
+main(int argc, char*argv[]){
     if(argc > 1){
         if(isInteger(*(argv+1))){
             VideoCapture cap(atoi(*(argv+1)));
@@ -39,14 +35,16 @@ int main(int argc, char*argv[]){
 }
 
 
-bool isInteger(string x){
+bool
+isInteger(string x){
     regex digit("([a-zA-Z])");
     if (regex_match (x, digit))
         return true;
     return false;
 }
 
-void processInput(VideoCapture cap){
+void
+processInput(VideoCapture cap){
     
     Mat frame;
     
