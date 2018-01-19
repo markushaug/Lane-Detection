@@ -29,7 +29,7 @@ int main(int argc, char*argv[]){
         }
     } else {
         // Challenge video
-        VideoCapture cap("/Users/markus/Desktop/challenge.mp4");
+        VideoCapture cap("/Users/markushaug/Desktop/wandaor.mov");
         processInput(cap);
     }
     cout << "press any key to close all windows";
