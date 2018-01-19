@@ -11,7 +11,7 @@ using namespace std;
 using namespace cv;
 
 bool isInteger(string);
-void processInput(VideoCapture);
+void processInput(Video Capture);
 
 int
 main(int argc, char*argv[]){

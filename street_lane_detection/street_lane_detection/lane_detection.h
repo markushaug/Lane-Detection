@@ -18,17 +18,24 @@ private:
         newWidth = 480,
         originalHeight{0},
         originalWidth{0};
+ Scalar colorBlue = Scalar(255, 150, 0);
     
 public:
     Mat currFrame; //stores the upcoming frame
     
     LaneDetector(Mat startFrame)
     {
-        currFrame = Mat(newHeight,newWidth,CV_8UC1,0.0);// initialised the image size to 320x480
+        currFrame = Mat(newHeight,newWidth,CV_8UC1,0.0);
         this->originalHeight = startFrame.rows;
-            resize(startFrame, currFrame, currFrame.size());// resize the input to required size
+        
+        // resize the input to required size for faster processing
+        resize(startFrame, currFrame, currFrame.size());
         
         getLaneLines();
+    }
+    ~LaneDetector()
+    {
+        
     }
     
     void
@@ -44,15 +51,10 @@ public:
         this->showHoughP  = _showHoughP;
     }
     
+    
     void
-    getLaneLines()
+    preProcess(Mat &imgIn, Mat &imgRoi, Mat &contours)
     {
-        Mat imgIn = currFrame;
-        
-        // Output image is set to black
-        Mat imgROI = Mat::ones(imgIn.size(), imgIn.type());
-        imgROI = Scalar(0.0,0.0,0.0);
-        
         int height, width;
         height = currFrame.rows;
         width = currFrame.cols;
@@ -63,32 +65,27 @@ public:
         points.push_back(Point2f(width/2-1,height/2-1));
         
         // Warp all pixels inside input triangle to output triangle
-        crateRegionOfInterest(imgIn, imgROI, points);
-        
-        // Draw the triangle using this color
-        Scalar color = Scalar(255, 150, 0);
-        
+        crateRegionOfInterest(imgIn, imgRoi, points);
+    
         // cv::polylines needs vector of type Point and not Point2f
         vector<Point> triInInt, triOutInt;
         for(int i(0); i < 3; i++){
             triInInt.push_back( Point(points[i].x, points[i].y ));
         }
         // Draw the polylines
-        polylines(imgIn, triInInt, true, color, 2, 16);
-        polylines(imgROI, triInInt, true, color, 2, 16);
+        polylines(imgIn, triInInt, true, colorBlue, 2, 16);
+        polylines(imgRoi, triInInt, true, colorBlue, 2, 16);
         
-       
         if(showOriginal){
             namedWindow("Original Image");
             imshow("Original Image", currFrame);
         }
         
-        cvtColor(imgROI, imgROI, COLOR_BGR2GRAY);
-        GaussianBlur(imgROI ,imgROI,Size(5, 5), 0);
+        cvtColor(imgRoi, imgRoi, COLOR_BGR2GRAY);
+        GaussianBlur(imgRoi ,imgRoi,Size(5, 5), 0);
         
         // Canny algorithm
-        Mat contours;
-        Canny(imgROI, contours, 50,150);
+        Canny(imgRoi, contours, 50,150);
         Mat contoursInv;
         threshold(contours, contoursInv, 128, 255,THRESH_BINARY_INV);
         
@@ -96,6 +93,19 @@ public:
             namedWindow("Contours");
             imshow("Contours", contours);
         }
+    }
+    
+    void
+    getLaneLines()
+    {
+        Mat imgIn = currFrame,
+            imgRoi = Mat::ones(imgIn.size(), imgIn.type()),
+            contours;
+        
+        imgRoi = Scalar(0.0,0.0,0.0);
+        
+        // Define Region and interest and find contours
+        preProcess(imgIn, imgRoi, contours);
         
         // Hough transform
         vector<Vec2f> lines;
@@ -116,17 +126,17 @@ public:
         }
         cout << "houghVote: " << houghVote << endl;
     
-        Mat result(imgROI.size(), CV_8U, Scalar(255));
-        imgROI.copyTo(result);
+        Mat result(imgRoi.size(), CV_8U, Scalar(255));
+        imgRoi.copyTo(result);
         
         // Draw the lines
         vector<Vec2f>::const_iterator it=lines.begin();
-        Mat hough(imgROI.size(), CV_8U, 255);
+        Mat hough(imgRoi.size(), CV_8U, 255);
         
         while(it!=lines.end()){
             float rho = (*it)[0];
             float theta = (*it)[1];
-            if((theta > 0.09 && theta < 1.48) || (theta < 3.14 && theta > 1.66)){
+            if((theta > 0.09 && theta < 1.48) || (theta < 3.14 && theta > 2.66)){
                 // so we actually removed vertical and horizontal lines
                 
                 // point of intersection of the line with first row
@@ -141,11 +151,10 @@ public:
                 points.push_back(Point2f(width-1,height-1));
                 points.push_back(Point2f(width/2-1,height/2-1));
                 */
-                if( pt1 != Point(0,newHeight/2-1) && pt2 != Point(0,newHeight/2-1) ){
-                    line(result, pt1, pt2, color, 4);
-                    line(hough, pt1, pt2, color,4);
-                }
-            }
+                    line(result, pt1, pt2, colorBlue, 4);
+                    line(hough, pt1, pt2, colorBlue,4);
+                
+           }
             cout << "line: (" << rho << "," << theta << ")" << endl;
             ++it;
         };
@@ -168,9 +177,9 @@ public:
         getLaneLines();
     }
     
-    void crateRegionOfInterest(Mat &img1, Mat &img2, vector<Point2f> tri)
+    void
+    crateRegionOfInterest(Mat &img1, Mat &img2, vector<Point2f> tri)
     {
-        // Find bounding rectangle for each triangle
         Rect r1 = boundingRect(tri);
         Rect r2 = boundingRect(tri);
         
@@ -184,9 +193,7 @@ public:
             
             // fillConvexPoly needs a vector of Point and not Point2f
             tri2CroppedInt.push_back( Point((int)(tri[i].x - r2.x), (int)(tri[i].y - r2.y)) );
-            
         }
-        
         // Apply warpImage to small rectangular patches
         Mat img1Cropped;
         img1(r1).copyTo(img1Cropped);
@@ -206,8 +213,5 @@ public:
         // Copy triangular region of the rectangular patch to the output image
         multiply(img2Cropped,mask, img2Cropped);
         img2 = img2Cropped;
-        
    }
-    
-    
 };//end of class LaneDetector
