@@ -11,21 +11,23 @@ using namespace std;
 using namespace cv;
 
 bool isInteger(string);
-void processInput(Video Capture);
+void processInput(VideoCapture);
 
 int
 main(int argc, char*argv[]){
     if(argc > 1){
         if(isInteger(*(argv+1))){
+            // process camera input
             VideoCapture cap(atoi(*(argv+1)));
             processInput(cap);
         } else {
+            // process file
             VideoCapture cap(*(argv+1));
             processInput(cap);
         }
     } else {
         // Challenge video
-        VideoCapture cap("/Users/markushaug/Desktop/wandaor.mov");
+        VideoCapture cap("/Users/markushaug/Desktop/challenge.mp4");
         processInput(cap);
     }
     cout << "press any key to close all windows";
@@ -37,11 +39,12 @@ main(int argc, char*argv[]){
 
 bool
 isInteger(string x){
-    regex digit("([a-zA-Z])");
+    regex digit("(^\\d{1,10}$)");
     if (regex_match (x, digit))
         return true;
     return false;
 }
+
 
 void
 processInput(VideoCapture cap){
