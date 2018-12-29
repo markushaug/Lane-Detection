@@ -36,7 +36,7 @@ C++ program using OpenCV to detect and track lanes. Can be used for autonomous d
 
 * Written in C++ with OpenCV
 * IDE: Xcode
-* Customizable Parameters (Treshold, ROI Size, ...)
+* Customizable parameters (Treshold, ROI Size, ...)
 * Signal Processing:
   * Create ROI
   * Canny edge detection
@@ -46,16 +46,16 @@ C++ program using OpenCV to detect and track lanes. Can be used for autonomous d
 I only worked with Xcode under OSX. For other IDEs or compilers I can not provide any information.
 
 1. In Xcode is set up the library search paths for OpenCV. 
-  In my case it is /usr/local/Cellar/opencv/3.4.0/lib /usr/local/lib.
+ - In my case it is /usr/local/Cellar/opencv/3.4.0/lib /usr/local/lib.
 2. Set path to input file in `main.cpp` or pass arguments at programm start
- 2.1 Or Use a single integer to select one of your web cams. (Webcam1 == 1, cam2 == 2, ...)
-     Or provide an path to an file (video/image)
+ - Or use a single integer to select one of your web cams. (Webcam1 == 1, cam2 == 2, ...)
+ - Or provide an path to an file (video/image)
 3. Configure options in `lane_detection.h`
-  * `houghVote` determines the fidelity of the line recognition (higher means more lines kept)
-  *  Further you can enable or disable windows of your choice
+ - `houghVote` determines the fidelity of the line recognition (higher means more lines kept)
+ -  Further you can enable or disable windows of your choice
 4. Run program
-  * Use the xcode project file
-    ** You may have to change the library paths to your library folder
+ - Use the xcode project file
+ - You may have to change the library paths to your library folder
 
 ## Implementation
 
@@ -67,7 +67,7 @@ The Algorithm creates the ROI, performs the gaussian blur filter to smooth the f
 ### Canny Edge filter
 ![CANNY](https://imgur.com/TMQ7wIk.png "Edge Detection")
 
-To create a binary image of edges is used. The Gaussian blur, followed by a Sobel filter in the x and y direction to determine the size of the gradient. The non-maximum suppression is applied to remove pixels from an identified edge. To determine an edge, two thresholds are used. If a pixel gradient is greater than the upper threshold, the pixel is retained, and if the pixel is lower than the lower threshold, it is rejected. Pixels in the center of the two thresholds are retained when a neighboring pixel is considered part of an edge.
+Used to create a binary image of edges. The Gaussian blur is used, followed by a Sobel filter in the x and y direction to determine the size of the gradient. The non-maximum suppression is applied to remove pixels from an identified edge. To determine an edge, two thresholds are used. If a pixel gradient is greater than the upper threshold, the pixel is retained, and if the pixel is lower than the lower threshold, it is rejected. Pixels in the center of the two thresholds are retained when a neighboring pixel is considered part of an edge.
 
 ### Hough Transform
 ![HOUGH](https://imgur.com/6j3lfu0.png "Hough Transform")
