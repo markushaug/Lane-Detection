@@ -6,13 +6,12 @@
 <h4 align="center">(currently in development)</h4>
 
 <p align="center">
-   <a href="https://www.codacy.com/app/markushaug/homify?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=markushaug/homify&amp;utm_campaign=Badge_Grade">
-      <img src="https://api.codacy.com/project/badge/Grade/17042a064390464e96f995ea436b4297">
+   <a href="https://app.codacy.com/app/markushaug/Lane-Detection?utm_source=github.com&utm_medium=referral&utm_content=markushaug/Lane-Detection&utm_campaign=Badge_Grade_Dashboard">
+      <img src="https://api.codacy.com/project/badge/Grade/ec063f51d2bb49acb5c67a1e542cad04">
   </a>
  
 </p>
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ec063f51d2bb49acb5c67a1e542cad04)](https://app.codacy.com/app/markushaug/Lane-Detection?utm_source=github.com&utm_medium=referral&utm_content=markushaug/Lane-Detection&utm_campaign=Badge_Grade_Dashboard)
 [![Dashboard](https://imgur.com/6j3lfu0.png)](https://github.com/markushaug/Lane-Detection)
 
 ## Table of content
