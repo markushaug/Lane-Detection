@@ -12,6 +12,7 @@
  
 </p>
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ec063f51d2bb49acb5c67a1e542cad04)](https://app.codacy.com/app/markushaug/Lane-Detection?utm_source=github.com&utm_medium=referral&utm_content=markushaug/Lane-Detection&utm_campaign=Badge_Grade_Dashboard)
 [![Dashboard](https://imgur.com/6j3lfu0.png)](https://github.com/markushaug/Lane-Detection)
 
 ## Table of content
