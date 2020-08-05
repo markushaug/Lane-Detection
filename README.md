@@ -47,7 +47,7 @@ I only worked with Xcode under OSX. For other IDEs or compilers I can not provid
  - In my case it is /usr/local/Cellar/opencv/3.4.0/lib /usr/local/lib.
 2. Set path to input file in `main.cpp` or pass arguments at programm start
  - Or use a single integer to select one of your web cams. (Webcam1 == 1, cam2 == 2, ...)
- - Or provide an path to an file (video/image)
+ - Or provide an pth to a file (video/image)
 3. Configure options in `lane_detection.h`
  - `houghVote` determines the fidelity of the line recognition (higher means more lines kept)
  -  Further you can enable or disable windows of your choice
@@ -73,7 +73,7 @@ Used to create a binary image of edges. The Gaussian blur is used, followed by a
 Used to recognize straight lines where a line is represented by polar coordinates. When all x-y values are represented as polar coordinates, intersection points of the resulting sinusoidal waves show at least two points that share the same line, with the intersection point representing an additional point on the line. As a result, the filter tracks the intersections and declares a line only if the number of points on the line exceeds a certain threshold.
 
 ## TODO
-- Apply an Bitwise-AND to put the Filter-Layer on top of the input stream.
+- Apply a Bitwise-AND to put the Filter-Layer on top of the input stream.
 - Optimization of the Algorithm (Intersection, Converting infinite lines to finite lines, ...)
 - Probabilistic Hough
   -> Equivalent to the Hough transformation, but provides endpoint values for all lines determined.
