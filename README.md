@@ -3,7 +3,7 @@
   <br>
 </h1>
 
-<h4 align="center">(currently in development)</h4>
+<h4 align="center">(No longer being developed.)</h4>
 
 <p align="center">
   <a href="https://www.codacy.com/app/markushaug/Lane-Detection?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=markushaug/Lane-Detection&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/804fd98a625b43869f597ea77ff0e37d"/></a>
